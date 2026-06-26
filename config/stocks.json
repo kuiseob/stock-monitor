@@ -1,0 +1,32 @@
+{
+  "stocks": [
+    {
+      "code": "005930",
+      "name": "삼성전자",
+      "market": "KOSPI"
+    },
+    {
+      "code": "000660",
+      "name": "SK하이닉스",
+      "market": "KOSPI"
+    },
+    {
+      "code": "006400",
+      "name": "삼성SDI",
+      "market": "KOSPI"
+    },
+    {
+      "code": "051910",
+      "name": "LG화학",
+      "market": "KOSPI"
+    },
+    {
+      "code": "005380",
+      "name": "현대차",
+      "market": "KOSPI"
+    }
+  ],
+  "update_interval_seconds": 1,
+  "max_retries": 5,
+  "retry_delay_seconds": 1
+}
