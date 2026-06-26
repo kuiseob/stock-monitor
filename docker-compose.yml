@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  stock-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stock-monitor
+    ports:
+      - "${STREAMLIT_PORT:-8501}:8501"
+    environment:
+      # 삼성증권 API 설정
+      SAMSUNG_API_KEY: ${SAMSUNG_API_KEY}
+      SAMSUNG_ACCOUNT_ID: ${SAMSUNG_ACCOUNT_ID}
+      SAMSUNG_API_SECRET: ${SAMSUNG_API_SECRET}
+
+      # WebSocket 설정
+      ATOSPLUS_WS_URL: ${ATOSPLUS_WS_URL:-wss://api.atosplus.samsung.co.kr/websocket}
+
+      # 기본 종목
+      DEFAULT_STOCKS: ${DEFAULT_STOCKS:-005930,000660,006400,051910,005380}
+
+      # 데이터베이스
+      DATABASE_PATH: /app/data/stock_data.db
+      RETENTION_DAYS: ${RETENTION_DAYS:-30}
+
+      # 로깅
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FILE: /app/logs/app.log
+
+      # Streamlit 설정
+      STREAMLIT_SERVER_PORT: 8501
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_LOGGER_LEVEL: info
+
+    volumes:
+      # 데이터 디렉토리
+      - stock_data:/app/data
+      # 로그 디렉토리
+      - stock_logs:/app/logs
+      # 설정 파일 (선택사항)
+      - ./.streamlit:/app/.streamlit
+
+    restart: unless-stopped
+
+    networks:
+      - stock-network
+
+    # 헬스 체크
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # 로깅 설정
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  stock_data:
+    driver: local
+  stock_logs:
+    driver: local
+
+networks:
+  stock-network:
+    driver: bridge
