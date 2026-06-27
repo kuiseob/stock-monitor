@@ -84,7 +84,6 @@ def main():
         "--name=StockMonitor "
         "--onefile "
         "--windowed "
-        "--icon=stock-monitor.ico "
         "--add-data=\"streamlit:streamlit\" "
         "--add-data=\"config:config\" "
         "--add-data=\".env.example:.\" "
