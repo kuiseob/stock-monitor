@@ -82,10 +82,10 @@ def main():
     pyinstaller_cmd = (
         "pyinstaller "
         "--name=StockMonitor "
-        "--onedir "  # Use onedir mode for better compatibility
+        "--onedir "
         "--windowed "
         "--distpath=dist "
-        "--buildpath=build "
+        "--workpath=build "
         "--specpath=. "
         "--add-data=\"streamlit:streamlit\" "
         "--add-data=\"config:config\" "
@@ -99,18 +99,13 @@ def main():
         "--collect-all=pydantic "
         "--hidden-import=streamlit "
         "--hidden-import=streamlit.elements "
-        "--hidden-import=streamlit.elements.arrow "
         "--hidden-import=streamlit.proto "
-        "--hidden-import=streamlit.proto.RootMessage_pb2 "
         "--hidden-import=pandas "
         "--hidden-import=plotly "
         "--hidden-import=numpy "
         "--hidden-import=websocket "
-        "--hidden-import=websocket._core "
-        "--hidden-import=websocket._socket "
         "--hidden-import=altair "
         "--hidden-import=pydantic "
-        "--hidden-import=pydantic.validators "
         "streamlit/app.py"
     )
 
