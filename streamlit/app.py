@@ -184,16 +184,20 @@ def main():
         else:
             st.info(f"선택된 종목: {', '.join([f'{code} ({stock_names.get(code)})' for code in st.session_state.stock_codes])}")
 
-            # 종목별 카드
+            # 종목별 카드 (클릭 가능한 expander)
             cols = st.columns(min(len(st.session_state.stock_codes), 3))
             for idx, code in enumerate(st.session_state.stock_codes):
                 with cols[idx % 3]:
-                    with st.container(border=True):
-                        st.subheader(f"{stock_names.get(code, code)}")
+                    # 최신 데이터 조회
+                    latest_price = db.get_latest_price(code)
+                    latest_trade = db.get_latest_trade(code)
 
-                        # 최신 데이터 조회
-                        latest_price = db.get_latest_price(code)
-                        latest_trade = db.get_latest_trade(code)
+                    # Expander 헤더에 기본 정보 표시
+                    price_str = data_service.format_price(latest_price["price"]) if latest_price else "수집 중..."
+                    volume_str = data_service.format_volume(latest_price.get("volume", 0)) if latest_price else "수집 중..."
+
+                    with st.expander(f"📊 {stock_names.get(code, code)} | 💰 {price_str} | 📈 {volume_str}", expanded=False):
+                        st.markdown(f"### {code} - {stock_names.get(code, code)}")
 
                         if latest_price:
                             col_a, col_b = st.columns(2)
