@@ -318,6 +318,43 @@ def main():
     with tab4:
         st.subheader("설정")
 
+        # 종목 관리 섹션
+        st.markdown("**📌 모니터링 종목 관리**")
+
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            new_stock_code = st.text_input(
+                "새 종목 코드 입력 (예: 005930)",
+                placeholder="6자리 종목 코드"
+            )
+        with col2:
+            st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+            if st.button("➕ 종목 추가", use_container_width=True):
+                if new_stock_code and len(new_stock_code) == 6:
+                    if new_stock_code not in Config.DEFAULT_STOCKS:
+                        Config.DEFAULT_STOCKS.append(new_stock_code)
+                        st.success(f"✓ {new_stock_code} 추가됨")
+                        st.rerun()
+                    else:
+                        st.warning("⚠️ 이미 등록된 종목입니다")
+                else:
+                    st.error("❌ 6자리 종목 코드를 입력해주세요")
+
+        st.markdown("**현재 모니터링 종목:**")
+        cols = st.columns(3)
+        for idx, code in enumerate(Config.DEFAULT_STOCKS):
+            with cols[idx % 3]:
+                col_delete, col_name = st.columns([1, 2])
+                with col_name:
+                    st.write(f"📊 {code} ({stock_names.get(code, '미등록')})")
+                with col_delete:
+                    if st.button("❌", key=f"delete_{code}", use_container_width=True):
+                        Config.DEFAULT_STOCKS.remove(code)
+                        st.success(f"✓ {code} 삭제됨")
+                        st.rerun()
+
+        st.markdown("---")
+
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("**API 설정**")
