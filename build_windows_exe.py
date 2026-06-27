@@ -88,8 +88,15 @@ def main():
         "--add-data=\"config:config\" "
         "--add-data=\".env.example:.\" "
         "--hidden-import=streamlit "
+        "--hidden-import=streamlit.elements "
+        "--hidden-import=streamlit.elements.utils "
         "--hidden-import=pandas "
         "--hidden-import=plotly "
+        "--hidden-import=numpy "
+        "--hidden-import=websocket "
+        "--hidden-import=websocket._core "
+        "--hidden-import=websocket._socket "
+        "--collect-submodules=streamlit "
         "streamlit/app.py"
     )
 
