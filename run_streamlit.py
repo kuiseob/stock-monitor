@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 """
-Streamlit 앱 실행 래퍼
-PyInstaller EXE에서 streamlit을 subprocess로 실행
-
-이 방식으로 streamlit 모듈 로딩 문제를 우회합니다.
+Streamlit 앱 실행 래퍼 (개선된 버전)
+직접 streamlit을 임포트해서 실행 (subprocess 문제 해결)
 """
 
-import subprocess
 import sys
 import os
 from pathlib import Path
-import webbrowser
-import time
 
 def main():
-    """Streamlit 앱을 subprocess로 실행"""
+    """Streamlit 앱을 직접 실행"""
 
     try:
         # 현재 디렉토리 설정
@@ -22,60 +17,53 @@ def main():
         os.chdir(app_dir)
 
         print("="*60)
-        print("  Stock Monitor - 실시간 주식 모니터링 대시보드")
+        print("  Stock Monitor")
+        print("  실시간 주식 모니터링 대시보드")
         print("="*60)
         print()
-        print("📍 앱 실행 중...")
+
+        # Streamlit 직접 임포트 및 실행
+        try:
+            import streamlit.cli as stcli
+
+            print("✅ Streamlit 로드 성공")
+            print()
+            print("📍 앱 실행 중...")
+            print("🌐 브라우저: http://localhost:8501")
+            print()
+            print("-"*60)
+            print()
+
+            # Streamlit 실행
+            sys.argv = [
+                "streamlit",
+                "run",
+                "streamlit/app.py",
+                "--server.port=8501",
+                "--logger.level=error",
+                "--client.showErrorDetails=false"
+            ]
+
+            stcli.main()
+
+        except ImportError as e:
+            print(f"❌ Streamlit 임포트 실패: {e}")
+            print()
+            print("대안: run.bat을 사용하세요")
+            print("  run.bat는 Python 인터프리터를 직접 사용하여 더 안정적입니다")
+            sys.exit(1)
+
+    except KeyboardInterrupt:
         print()
-
-        # streamlit 앱 실행
-        cmd = [
-            sys.executable,
-            "-m",
-            "streamlit",
-            "run",
-            "streamlit/app.py",
-            "--server.port=8501",
-            "--logger.level=error",
-            "--client.showErrorDetails=false"
-        ]
-
-        print(f"💻 명령어: {' '.join(cmd)}")
-        print()
-
-        # 브라우저 자동 열기 (약간의 지연 후)
-        print("🌐 브라우저 열기: http://localhost:8501")
-        print()
-
-        def open_browser():
-            """몇 초 후 브라우저 열기"""
-            time.sleep(3)
-            try:
-                webbrowser.open("http://localhost:8501")
-            except:
-                pass
-
-        # 백그라운드에서 브라우저 열기
-        import threading
-        browser_thread = threading.Thread(target=open_browser, daemon=True)
-        browser_thread.start()
-
-        # Streamlit 실행
-        print("⏳ 앱 로딩 중... (약 10-15초 소요)")
-        print()
-        print("-"*60)
-        print()
-
-        result = subprocess.run(cmd)
-        sys.exit(result.returncode)
-
+        print("⏹️ 앱이 종료되었습니다")
+        sys.exit(0)
     except Exception as e:
-        print(f"❌ 오류: {e}")
+        print(f"❌ 오류 발생: {e}")
         print()
         print("해결 방법:")
-        print("1. Python이 설치되어 있는지 확인")
-        print("2. requirements.txt를 설치했는지 확인: pip install -r requirements.txt")
-        print("3. 대신 run.bat을 사용해보세요")
+        print("1. Python 3.9+ 설치 확인")
+        print("2. requirements.txt 설치: pip install -r requirements.txt")
+        print("3. run.bat 사용 권장")
         sys.exit(1)
 
 if __name__ == "__main__":
