@@ -211,42 +211,75 @@ def main():
                             st.info("📊 데이터 수집 중...")
 
                         if latest_trade:
+                            import pandas as pd
+                            import plotly.graph_objects as go
+
                             # 외국인 거래 현황
                             st.markdown("**🌍 외국인**")
                             foreign_buy = latest_trade.get("foreign_buy_volume", 0)
                             foreign_sell = latest_trade.get("foreign_sell_volume", 0)
                             net_foreign = foreign_buy - foreign_sell
 
+                            # 외국인 막대 그래프 (숫자 표시)
+                            fig_foreign = go.Figure()
+                            fig_foreign.add_trace(go.Bar(
+                                x=["매수", "매도"],
+                                y=[foreign_buy, foreign_sell],
+                                text=[f"{int(foreign_buy):,}", f"{int(foreign_sell):,}"],
+                                textposition="outside",
+                                marker=dict(color=["#00AA00", "#FF0000"]),
+                                showlegend=False
+                            ))
+                            fig_foreign.update_layout(
+                                height=250,
+                                margin=dict(l=0, r=0, t=0, b=0),
+                                yaxis_title="주",
+                                xaxis_title="",
+                                hovermode="x"
+                            )
+                            st.plotly_chart(fig_foreign, use_container_width=True)
+
                             col_buy, col_sell, col_net = st.columns(3)
                             with col_buy:
-                                st.write(f"📈 매수: {foreign_buy:,.0f}주")
+                                st.metric("매수", f"{int(foreign_buy):,}주", delta=None)
                             with col_sell:
-                                st.write(f"📉 매도: {foreign_sell:,.0f}주")
+                                st.metric("매도", f"{int(foreign_sell):,}주", delta=None)
                             with col_net:
                                 color = "🔴" if net_foreign < 0 else "🟢"
-                                st.write(f"{color} 순: {net_foreign:,.0f}주")
-
-                            # 외국인 막대 그래프
-                            import pandas as pd
-                            foreign_data = pd.DataFrame({
-                                "매매": ["매수", "매도"],
-                                "주": [foreign_buy, foreign_sell]
-                            })
-                            st.bar_chart(foreign_data.set_index("매매"), color=["#00AA00", "#FF0000"])
+                                st.write(f"**{color} 순매수: {int(net_foreign):,}주**")
 
                             st.markdown("**🏢 기관**")
                             inst_buy = latest_trade.get("institution_buy_volume", 0)
                             inst_sell = latest_trade.get("institution_sell_volume", 0)
                             net_inst = inst_buy - inst_sell
 
+                            # 기관 막대 그래프 (숫자 표시)
+                            fig_inst = go.Figure()
+                            fig_inst.add_trace(go.Bar(
+                                x=["매수", "매도"],
+                                y=[inst_buy, inst_sell],
+                                text=[f"{int(inst_buy):,}", f"{int(inst_sell):,}"],
+                                textposition="outside",
+                                marker=dict(color=["#0066FF", "#FF6600"]),
+                                showlegend=False
+                            ))
+                            fig_inst.update_layout(
+                                height=250,
+                                margin=dict(l=0, r=0, t=0, b=0),
+                                yaxis_title="주",
+                                xaxis_title="",
+                                hovermode="x"
+                            )
+                            st.plotly_chart(fig_inst, use_container_width=True)
+
                             col_buy, col_sell, col_net = st.columns(3)
                             with col_buy:
-                                st.write(f"📈 매수: {inst_buy:,.0f}주")
+                                st.metric("매수", f"{int(inst_buy):,}주", delta=None)
                             with col_sell:
-                                st.write(f"📉 매도: {inst_sell:,.0f}주")
+                                st.metric("매도", f"{int(inst_sell):,}주", delta=None)
                             with col_net:
                                 color = "🔴" if net_inst < 0 else "🟢"
-                                st.write(f"{color} 순: {net_inst:,.0f}주")
+                                st.write(f"**{color} 순매수: {int(net_inst):,}주**")
 
     with tab2:
         st.subheader("차트 및 분석")
