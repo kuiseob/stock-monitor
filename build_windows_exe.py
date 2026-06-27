@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Windows EXE Builder
-Converts Streamlit app to Windows EXE using PyInstaller
+Windows EXE Builder - Enhanced Version
+Converts Streamlit app to Windows EXE using PyInstaller with full support
 
 Usage:
     python build_windows_exe.py
@@ -16,9 +16,9 @@ from pathlib import Path
 
 def print_header(text):
     """Print header"""
-    print("\n" + "="*50)
+    print("\n" + "="*60)
     print(f"  {text}")
-    print("="*50 + "\n")
+    print("="*60 + "\n")
 
 def run_command(cmd, description=""):
     """Execute command"""
@@ -36,24 +36,21 @@ def run_command(cmd, description=""):
         return False
 
 def main():
-    print_header("Stock Monitor - Windows EXE Build")
+    print_header("Stock Monitor - Windows EXE Build (Enhanced)")
 
     project_root = Path(__file__).parent.absolute()
     os.chdir(project_root)
 
     # 1. Check required tools
-    print("[1/6] Checking requirements...")
-
-    # Check Python version
+    print("[1/7] Checking requirements...")
     python_version = sys.version_info
     if python_version.major < 3 or python_version.minor < 9:
         print(f"[ERROR] Python 3.9+ required (current: {python_version.major}.{python_version.minor})")
         return False
-
     print(f"OK Python {python_version.major}.{python_version.minor}")
 
     # 2. Check PyInstaller
-    print("\n[2/6] Checking PyInstaller...")
+    print("\n[2/7] Checking PyInstaller...")
     result = subprocess.run("pip show pyinstaller", shell=True, capture_output=True, text=True)
     if result.returncode != 0:
         print("[INFO] Installing PyInstaller...")
@@ -62,84 +59,117 @@ def main():
     print("OK PyInstaller ready")
 
     # 3. Install dependencies
-    print("\n[3/6] Installing dependencies...")
+    print("\n[3/7] Installing dependencies...")
     if not run_command("pip install -q -r requirements.txt", "Dependency installation"):
         return False
     print("OK Dependencies installed")
 
     # 4. Clean build directory
-    print("\n[4/6] Cleaning build directory...")
-    for dir_name in ["build", "dist"]:
+    print("\n[4/7] Cleaning build directory...")
+    for dir_name in ["build", "dist", "StockMonitor.spec"]:
         if os.path.exists(dir_name):
-            shutil.rmtree(dir_name)
-            print(f"OK Removed {dir_name}/")
+            if os.path.isdir(dir_name):
+                shutil.rmtree(dir_name)
+            else:
+                os.remove(dir_name)
+            print(f"OK Removed {dir_name}")
 
-    # 5. Build EXE
-    print("\n[5/6] Building Windows EXE...")
-    print("(This may take 1-3 minutes)\n")
+    # 5. Build EXE with enhanced settings
+    print("\n[5/7] Building Windows EXE (Enhanced)...")
+    print("(This may take 2-5 minutes)\n")
 
-    # PyInstaller command
+    # Enhanced PyInstaller command with better Streamlit support
     pyinstaller_cmd = (
         "pyinstaller "
         "--name=StockMonitor "
-        "--onefile "
+        "--onedir "  # Use onedir mode for better compatibility
         "--windowed "
+        "--distpath=dist "
+        "--buildpath=build "
+        "--specpath=. "
         "--add-data=\"streamlit:streamlit\" "
         "--add-data=\"config:config\" "
+        "--add-data=\"src:src\" "
         "--add-data=\".env.example:.\" "
+        "--collect-all=streamlit "
+        "--collect-all=altair "
+        "--collect-all=pandas "
+        "--collect-all=plotly "
+        "--collect-all=numpy "
+        "--collect-all=pydantic "
         "--hidden-import=streamlit "
         "--hidden-import=streamlit.elements "
-        "--hidden-import=streamlit.elements.utils "
+        "--hidden-import=streamlit.elements.arrow "
+        "--hidden-import=streamlit.proto "
+        "--hidden-import=streamlit.proto.RootMessage_pb2 "
         "--hidden-import=pandas "
         "--hidden-import=plotly "
         "--hidden-import=numpy "
         "--hidden-import=websocket "
         "--hidden-import=websocket._core "
         "--hidden-import=websocket._socket "
-        "--collect-submodules=streamlit "
+        "--hidden-import=altair "
+        "--hidden-import=pydantic "
+        "--hidden-import=pydantic.validators "
         "streamlit/app.py"
     )
 
     if not run_command(pyinstaller_cmd, "EXE creation"):
-        print("\n[WARNING] Could not create EXE with PyInstaller")
-        print("Use run.bat instead")
+        print("\n[WARNING] EXE creation failed")
         return False
 
-    # 6. Final cleanup
-    print("\n[6/6] Finalizing...")
+    # 6. Verify build
+    print("\n[6/7] Verifying build...")
+    exe_path = project_root / "dist" / "StockMonitor" / "StockMonitor.exe"
+    if not exe_path.exists():
+        # Try alternative path
+        exe_path = project_root / "dist" / "StockMonitor.exe"
 
-    # Check executable
-    exe_path = project_root / "dist" / "StockMonitor.exe"
     if exe_path.exists():
+        file_size = exe_path.stat().st_size / (1024*1024)
         print(f"OK EXE created: {exe_path}")
-        print(f"  Size: {exe_path.stat().st_size / (1024*1024):.1f} MB")
-
-        print("\n[SUCCESS] Windows EXE build completed!")
-        print_header("Next steps")
-        print("1. Run dist/StockMonitor.exe")
-        print("2. Or copy dist/ folder to another PC")
-        print("\nNote:")
-        print("- No Python required on target PC")
-        print("- First run takes 1-2 minutes (loading)")
-        print("- Edit .env file to add API keys")
-
-        return True
+        print(f"  Size: {file_size:.1f} MB")
     else:
-        print("[ERROR] EXE creation failed")
+        print("[ERROR] EXE file not found")
         return False
+
+    # 7. Final setup
+    print("\n[7/7] Final setup...")
+
+    # Copy .env.example to dist folder
+    env_example = project_root / ".env.example"
+    if env_example.exists():
+        if exe_path.parent.exists():
+            dist_env = exe_path.parent / ".env.example"
+        else:
+            dist_env = project_root / "dist" / ".env.example"
+        shutil.copy(env_example, dist_env)
+        print(f"OK Copied .env.example to dist folder")
+
+    print("\n[SUCCESS] Windows EXE build completed!")
+    print_header("Next steps")
+    print("1. Run: dist/StockMonitor/StockMonitor.exe")
+    print("2. Or copy entire dist/StockMonitor/ folder to another PC")
+    print("\nNote:")
+    print("- No Python required on target PC")
+    print("- Edit .env file to add API keys")
+    print("- First run may take a moment (Streamlit startup)")
+
+    return True
 
 if __name__ == "__main__":
-    print_header("Stock Monitor Windows EXE Builder")
+    print_header("Stock Monitor Windows EXE Builder (Enhanced)")
     success = main()
 
     if not success:
-        print("\n" + "="*50)
+        print("\n" + "="*60)
         print("  Build failed")
-        print("="*50)
+        print("="*60)
         print("\n[Solutions]")
         print("1. Check Python is in PATH")
         print("2. Run as administrator")
-        print("3. Or use run.bat instead")
+        print("3. Check disk space (need ~500MB)")
+        print("4. Run: pip install -q pyinstaller")
         sys.exit(1)
 
     sys.exit(0)
