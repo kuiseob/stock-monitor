@@ -16,13 +16,16 @@ from src.database.manager import DatabaseManager
 
 logger = setup_logger(__name__)
 
-# 페이지 설정
-st.set_page_config(
-    page_title="Stock Monitor",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# 페이지 설정 (안전하게 처리)
+try:
+    st.set_page_config(
+        page_title="Stock Monitor",
+        page_icon="📈",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+except Exception as e:
+    logger.warning(f"set_page_config failed: {e}")
 
 # 커스텀 CSS
 st.markdown("""
