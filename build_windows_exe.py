@@ -78,7 +78,8 @@ def main():
     print("\n[5/7] Building Windows EXE (Enhanced)...")
     print("(This may take 2-5 minutes)\n")
 
-    # Enhanced PyInstaller command with complete Python runtime
+    # Enhanced PyInstaller command with Streamlit wrapper
+    # Uses subprocess to avoid Streamlit module loading issues
     pyinstaller_cmd = (
         "pyinstaller "
         "--name=StockMonitor "
@@ -91,8 +92,10 @@ def main():
         "--add-data=\"config:config\" "
         "--add-data=\"src:src\" "
         "--add-data=\".env.example:.\" "
+        "--add-data=\"streamlit:streamlit\" "
         "--collect-all=streamlit "
         "--collect-all=streamlit.proto "
+        "--collect-all=streamlit.commands "
         "--collect-all=altair "
         "--collect-all=pandas "
         "--collect-all=plotly "
@@ -106,15 +109,13 @@ def main():
         "--hidden-import=streamlit "
         "--hidden-import=streamlit.elements "
         "--hidden-import=streamlit.proto "
-        "--hidden-import=streamlit.proto.RootMessage_pb2 "
+        "--hidden-import=streamlit.commands.run "
         "--hidden-import=pandas "
         "--hidden-import=pandas.io.formats.style "
         "--hidden-import=plotly "
         "--hidden-import=plotly.io "
         "--hidden-import=numpy "
-        "--hidden-import=numpy.random "
         "--hidden-import=websocket "
-        "--hidden-import=websocket._socket "
         "--hidden-import=altair "
         "--hidden-import=pydantic "
         "--hidden-import=click "
@@ -123,10 +124,11 @@ def main():
         "--hidden-import=yaml "
         "--hidden-import=PIL "
         "--hidden-import=cryptography "
+        "--hidden-import=webbrowser "
         "--collect-submodules=streamlit "
         "--collect-submodules=pandas "
         "--collect-submodules=plotly "
-        "streamlit/app.py"
+        "run_streamlit.py"
     )
 
     if not run_command(pyinstaller_cmd, "EXE creation"):
